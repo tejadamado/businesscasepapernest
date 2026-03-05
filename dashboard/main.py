@@ -18,7 +18,11 @@ st.set_page_config(
 # ---------------------------------------------------------------------------
 @st.cache_data
 def load_data():
-    df = pd.read_excel('datos_bc.xlsx', sheet_name='1. Sales Database')
+    import os
+    df = pd.read_excel(
+        os.path.join(os.path.dirname(__file__), 'datos_bc.xlsx'),
+        sheet_name='1. Sales Database'
+    )
     df['Sale date'] = pd.to_datetime(df['Sale date'])
     df['Call duration'] = df.iloc[:, 8]
     df['Channel'] = df.iloc[:, 9]
@@ -149,6 +153,16 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
 header { visibility: hidden; }
 footer { visibility: hidden; }
 .stDeployButton { display: none; }
+
+/* NUEVAS LÍNEAS PARA EL BOTÓN DE KEYBOARD */
+[data-testid="stHelpAction"] { display: none !important; }
+button[aria-label="Open keyboard shortcuts dialog"] { display: none !important; }
+[data-testid="stHeader"] { display: none !important; }
+
+/* Refuerzo para ocultar la barra de herramientas superior completa */
+header[data-testid="stHeader"] {
+    background: transparent !important;
+    display: none !important;
 
 /* ── Section labels ── */
 .section-label {
@@ -392,8 +406,38 @@ ranked.index = ranked.index + 1
 ranked.index.name = 'Rank'
 ranked['NET_Revenue'] = ranked['NET_Revenue'].apply(lambda v: f"€{v:,.1f}")
 
-st.dataframe(ranked[['Team', 'Channel', 'Sales site', 'NET_Contracts', 'NET_Revenue']],
-             use_container_width=True, height=360)
+# Build HTML table
+rows_html = ""
+for i, row in ranked.iterrows():
+    bg = "#13102A" if i % 2 == 0 else "#0E0C1A"
+    rows_html += f"""
+    <tr style="background:{bg};">
+        <td style="padding:10px 12px;color:#6B6B8A;font-size:12px;">{i}</td>
+        <td style="padding:10px 12px;color:#E2E8F0;font-weight:500;">{row['Team']}</td>
+        <td style="padding:10px 12px;color:#A0AEC0;">{row['Channel']}</td>
+        <td style="padding:10px 12px;color:#A0AEC0;">{row['Sales site']}</td>
+        <td style="padding:10px 12px;color:#9B7FEB;text-align:right;font-weight:600;">{int(row['NET_Contracts'])}</td>
+        <td style="padding:10px 12px;color:#C4A8FF;text-align:right;font-weight:600;">{row['NET_Revenue']}</td>
+    </tr>"""
+
+table_html = f"""
+<div style="border-radius:8px;overflow:hidden;border:1px solid #1E1A35;">
+<table style="width:100%;border-collapse:collapse;font-family:Inter,sans-serif;">
+    <thead>
+        <tr style="background:#1E1A35;">
+            <th style="padding:10px 12px;color:#6B4FBB;font-size:10px;text-transform:uppercase;letter-spacing:1px;text-align:left;font-weight:600;">Rank</th>
+            <th style="padding:10px 12px;color:#6B4FBB;font-size:10px;text-transform:uppercase;letter-spacing:1px;text-align:left;font-weight:600;">Team</th>
+            <th style="padding:10px 12px;color:#6B4FBB;font-size:10px;text-transform:uppercase;letter-spacing:1px;text-align:left;font-weight:600;">Channel</th>
+            <th style="padding:10px 12px;color:#6B4FBB;font-size:10px;text-transform:uppercase;letter-spacing:1px;text-align:left;font-weight:600;">Site</th>
+            <th style="padding:10px 12px;color:#6B4FBB;font-size:10px;text-transform:uppercase;letter-spacing:1px;text-align:right;font-weight:600;">NET Contracts</th>
+            <th style="padding:10px 12px;color:#6B4FBB;font-size:10px;text-transform:uppercase;letter-spacing:1px;text-align:right;font-weight:600;">NET Revenue</th>
+        </tr>
+    </thead>
+    <tbody>{rows_html}</tbody>
+</table>
+</div>"""
+
+st.markdown(table_html, unsafe_allow_html=True)
 
 # ---------------------------------------------------------------------------
 # Footer
