@@ -1,0 +1,8 @@
+{
+  "experimentalServices": {
+    "dashboard": {
+      "entrypoint": "dashboard/main.py",
+      "routePrefix": "/"
+    }
+  }
+}
