@@ -148,22 +148,21 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
     border-bottom: 1px solid #2D2850 !important;
 }
 
-/* ── Hide Streamlit chrome ── */
-#MainMenu { visibility: hidden; }
-header { visibility: hidden; }
+/* ── Cleanest UI possible ── */
+header, [data-testid="stHeader"] { visibility: hidden; height: 0; }
 footer { visibility: hidden; }
+#MainMenu { visibility: hidden; }
 .stDeployButton { display: none; }
 
-/* NUEVAS LÍNEAS PARA EL BOTÓN DE KEYBOARD */
-[data-testid="stHelpAction"] { display: none !important; }
-button[aria-label="Open keyboard shortcuts dialog"] { display: none !important; }
-[data-testid="stHeader"] { display: none !important; }
-
-/* Refuerzo para ocultar la barra de herramientas superior completa */
-header[data-testid="stHeader"] {
-    background: transparent !important;
+/* Elimina el botón de la flecha y su texto fantasma */
+[data-testid="collapseSidebar"] {
     display: none !important;
+}
 
+/* Evita que el texto de accesibilidad "flote" en el sidebar */
+section[data-testid="stSidebar"] button {
+    display: none !important;
+}
 /* ── Section labels ── */
 .section-label {
     font-size: 10px;
