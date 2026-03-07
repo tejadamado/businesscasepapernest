@@ -171,6 +171,11 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
 header { visibility: hidden; }
 footer { visibility: hidden; }
 .stDeployButton { display: none; }
+
+/* ── Cleanest UI possible ── */
+header, [data-testid="stHeader"] { visibility: hidden; height: 0; }
+[data-testid="collapseSidebar"] { display: none !important; }
+section[data-testid="stSidebar"] button { display: none !important; }
 </style>
 """, unsafe_allow_html=True)
 
