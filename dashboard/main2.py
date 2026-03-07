@@ -548,10 +548,9 @@ with c7:
         yaxis='y2',
         hovertemplate='<b>%{x}</b><br>Volume: %{y}<extra></extra>'
     ))
+    fig7.update_layout(**PLOTLY_LAYOUT, height=340,
+                       title_text='Margin % vs Volume by Channel')
     fig7.update_layout(
-        **PLOTLY_LAYOUT,
-        height=340,
-        title_text='Margin % vs Volume by Channel',
         yaxis=dict(title='Margin %', ticksuffix='%',
                    gridcolor="#1E1A35", color="#6B6B8A"),
         yaxis2=dict(title='Total Contracts', overlaying='y', side='right',
