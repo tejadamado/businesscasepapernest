@@ -171,11 +171,6 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
 header { visibility: hidden; }
 footer { visibility: hidden; }
 .stDeployButton { display: none; }
-
-/* ── Cleanest UI possible ── */
-header, [data-testid="stHeader"] { visibility: hidden; height: 0; }
-[data-testid="collapseSidebar"] { display: none !important; }
-section[data-testid="stSidebar"] button { display: none !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -461,44 +456,59 @@ with c6:
     st.plotly_chart(fig6, use_container_width=True)
 
 # Auto-insights for section 2
-best_site  = site_conv.iloc[0]
+best_site       = site_conv.iloc[0]
 worst_site_conv = site_conv.iloc[-1]
-best_ch    = ch_conv.iloc[0]
-best_op    = op_conv.iloc[0]
-worst_op   = op_conv.iloc[-1]
-gap_ops    = best_op['Conv Rate %'] - worst_op['Conv Rate %']
+best_ch         = ch_conv.iloc[0]
+best_op         = op_conv.iloc[0]
+worst_op        = op_conv.iloc[-1]
+gap_ops         = best_op['Conv Rate %'] - worst_op['Conv Rate %']
+multi_site      = len(site_conv) > 1
+multi_ch        = len(ch_conv) > 1
+multi_op        = len(op_conv) > 1
 
-st.markdown(f"""
-<div class="insight-box insight-good">
-    🏆 <strong>{best_site['Sales site']}</strong> leads conversion at
-    <strong>{best_site['Conv Rate %']:.1f}%</strong>
-    ({best_site['NET']:.0f} NET contracts).
-    <strong>{best_ch['Channel']}</strong> is the top-performing channel at
-    <strong>{best_ch['Conv Rate %']:.1f}%</strong>.
-</div>
-""", unsafe_allow_html=True)
+# Insight 1 — top performer (always valid)
+if multi_site and multi_ch:
+    good_msg = (f"🏆 <strong>{best_site['Sales site']}</strong> leads conversion at "
+                f"<strong>{best_site['Conv Rate %']:.1f}%</strong> "
+                f"({best_site['NET']:.0f} NET contracts). "
+                f"<strong>{best_ch['Channel']}</strong> is the top-performing channel at "
+                f"<strong>{best_ch['Conv Rate %']:.1f}%</strong>.")
+elif multi_site:
+    good_msg = (f"🏆 <strong>{best_site['Sales site']}</strong> leads conversion at "
+                f"<strong>{best_site['Conv Rate %']:.1f}%</strong> "
+                f"({best_site['NET']:.0f} NET contracts).")
+elif multi_ch:
+    good_msg = (f"🏆 <strong>{best_ch['Channel']}</strong> is the top-performing channel at "
+                f"<strong>{best_ch['Conv Rate %']:.1f}%</strong> "
+                f"({best_site['NET']:.0f} NET contracts in the selected site).")
+else:
+    good_msg = (f"🏆 <strong>{best_site['Sales site']}</strong> — "
+                f"<strong>{best_site['Conv Rate %']:.1f}%</strong> conversion rate "
+                f"({best_site['NET']:.0f} NET contracts). Single site selected.")
 
-st.markdown(f"""
-<div class="insight-box insight-bad">
-    ⬇️ <strong>{worst_site_conv['Sales site']}</strong> is the lowest-performing site at
-    <strong>{worst_site_conv['Conv Rate %']:.1f}%</strong>
-    — {avg_rate - worst_site_conv['Conv Rate %']:.1f}pp below average.
-    Closing half this gap would generate ~{int(worst_site_conv['Total'] * (avg_rate - worst_site_conv['Conv Rate %']) / 100 / 2)} additional NET contracts
-    without acquiring new leads.
-</div>
-""", unsafe_allow_html=True)
+st.markdown(f'<div class="insight-box insight-good">{good_msg}</div>', unsafe_allow_html=True)
 
-st.markdown(f"""
-<div class="insight-box insight-warn">
-    📋 <strong>{best_op['Type of operation']}</strong> converts at
-    <strong>{best_op['Conv Rate %']:.1f}%</strong> vs
-    <strong>{worst_op['Conv Rate %']:.1f}%</strong> for
-    <strong>{worst_op['Type of operation']}</strong>
-    — a <strong>{gap_ops:.1f}pp gap</strong>.
-    Prioritising {best_op['Type of operation']} leads in routing logic
-    would immediately improve NTR.
-</div>
-""", unsafe_allow_html=True)
+# Insight 2 — lowest performer (only meaningful with 2+ sites)
+if multi_site:
+    gap_pp = avg_rate - worst_site_conv['Conv Rate %']
+    recoverable = int(worst_site_conv['Total'] * gap_pp / 100 / 2)
+    bad_msg = (f"⬇️ <strong>{worst_site_conv['Sales site']}</strong> is the lowest-performing site at "
+               f"<strong>{worst_site_conv['Conv Rate %']:.1f}%</strong> "
+               f"— {gap_pp:.1f}pp below average. "
+               f"Closing half this gap would generate ~{recoverable} additional NET contracts "
+               f"without acquiring new leads.")
+    st.markdown(f'<div class="insight-box insight-bad">{bad_msg}</div>', unsafe_allow_html=True)
+
+# Insight 3 — operation type gap (only meaningful with 2+ types)
+if multi_op and gap_ops > 1:
+    warn_msg = (f"📋 <strong>{best_op['Type of operation']}</strong> converts at "
+                f"<strong>{best_op['Conv Rate %']:.1f}%</strong> vs "
+                f"<strong>{worst_op['Conv Rate %']:.1f}%</strong> for "
+                f"<strong>{worst_op['Type of operation']}</strong> "
+                f"— a <strong>{gap_ops:.1f}pp gap</strong>. "
+                f"Prioritising {best_op['Type of operation']} leads in routing logic "
+                f"would immediately improve NTR.")
+    st.markdown(f'<div class="insight-box insight-warn">{warn_msg}</div>', unsafe_allow_html=True)
 
 st.markdown("<div style='height:24px'></div>", unsafe_allow_html=True)
 
